@@ -1,62 +1,41 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: game-app
+  name: nginx-deployment
   labels:
-    app: game
+    app: nginx
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: game
+      app: nginx
   template:
     metadata:
       labels:
-        app: game
+        app: nginx
     spec:
       containers:
-        - name: game
-          image: ghcr.io/docker/dev-environments-game:latest
+        - name: nginx
+          image: nginx:latest
           ports:
             - containerPort: 80
           resources:
             limits:
-              memory: "256Mi"
-              cpu: "500m"
-            requests:
               memory: "128Mi"
               cpu: "250m"
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: game-service
-  labels:
-    app: game
+  name: nginx-service
 spec:
+  type: LoadBalancer
   selector:
-    app: game
+    app: nginx
   ports:
-    - protocol: TCP
-      port: 80
+    - port: 80
       targetPort: 80
-  type: ClusterIP
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: game-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-spec:
-  rules:
-    - host: game.example.com  # Change this to your domain
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: game-service
-                port:
-                  number: 80
+      protocol: TCP
